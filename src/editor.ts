@@ -82,7 +82,12 @@ const highlight = HighlightStyle.define([
 
 const editorTheme = EditorView.theme({
   '&': { height: '100%', fontSize: '13.5px', backgroundColor: 'var(--editor-bg)' },
-  '.cm-scroller': { fontFamily: '"JetBrains Mono", ui-monospace, monospace', lineHeight: '1.65' },
+  '.cm-scroller': {
+    fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+    lineHeight: '1.65',
+    // Show `>=` and `-->` as typed, not as ligature glyphs.
+    fontVariantLigatures: 'none',
+  },
   '.cm-content': { caretColor: 'var(--accent)', padding: '12px 0' },
   '.cm-gutters': {
     backgroundColor: 'var(--editor-bg)',

@@ -10,6 +10,7 @@ import {
   prepareSvg,
   renderPng,
   svgBlob,
+  type PngResult,
 } from './export';
 import { Preview } from './preview';
 import { renderDiagram, type LayoutEngine, type RenderError } from './renderer';
@@ -55,9 +56,14 @@ let layout: LayoutEngine = load('layout') === 'elk' ? 'elk' : 'dagre';
 let scale = Number(load('scale')) || 2;
 let transparent = load('transparent') === '1';
 
-/** The last SVG that rendered successfully, and the theme it was rendered with. */
-let lastSvg: string | null = null;
-let lastTheme: AppTheme = theme;
+/** The last diagram that rendered successfully, with what it was rendered from. */
+interface Rendered {
+  svg: string;
+  code: string;
+  theme: AppTheme;
+  layout: LayoutEngine;
+}
+let last: Rendered | null = null;
 let fitOnNextRender = false;
 
 // ---- Toast ---------------------------------------------------------------
@@ -114,17 +120,17 @@ function scheduleRender(delay = RENDER_DEBOUNCE_MS): void {
   renderTimer = window.setTimeout(runRender, delay);
 }
 
-// Renders run one at a time because Mermaid's config is global; a render that
-// has been superseded by newer input is skipped or its result dropped.
+// A render that has been superseded by newer input is skipped or its result dropped.
 function runRender(): void {
   const seq = ++renderSeq;
   renderQueue = renderQueue.then(async () => {
     if (seq !== renderSeq) return;
     const code = editor.getCode();
     const renderTheme = theme;
+    const renderLayout = layout;
 
     if (!code.trim()) {
-      lastSvg = null;
+      last = null;
       preview.clear();
       preview.setBackground(renderTheme.canvas.background);
       els.emptyState.hidden = false;
@@ -140,10 +146,9 @@ function runRender(): void {
       setStatus('busy', 'Rendering…');
     }, 150);
     try {
-      const svg = await renderDiagram(code, renderTheme, layout);
+      const svg = await renderDiagram(code, renderTheme, renderLayout);
       if (seq !== renderSeq) return;
-      lastSvg = svg;
-      lastTheme = renderTheme;
+      last = { svg, code, theme: renderTheme, layout: renderLayout };
       els.emptyState.hidden = true;
       preview.setBackground(renderTheme.canvas.background);
       preview.show(svg);
@@ -226,41 +231,58 @@ els.transparent.addEventListener('change', () => {
 
 // ---- Export ----------------------------------------------------------------
 
-function requireSvg(): string | null {
-  if (!lastSvg) {
+function requireRendered(): Rendered | null {
+  if (!last) {
     toast('Nothing to export yet.', 'error');
     return null;
   }
   if (!els.error.hidden) toast('The code has errors. Exporting the last valid diagram.');
-  return lastSvg;
+  return last;
+}
+
+function isTaintError(err: unknown): boolean {
+  const e = err as { name?: string; message?: string };
+  return e?.name === 'SecurityError' || /tainted|insecure/i.test(e?.message ?? '');
+}
+
+/**
+ * Draws the diagram to PNG. Some browsers refuse to export a canvas that drew
+ * HTML labels; then the diagram is re-rendered with SVG text labels and retried.
+ */
+async function buildPng(rendered: Rendered): Promise<PngResult> {
+  try {
+    return await renderPng(await prepareSvg(rendered.svg, rendered.theme, { transparent }), scale);
+  } catch (err) {
+    if (!isTaintError(err)) throw err;
+    const svg = await renderDiagram(rendered.code, rendered.theme, rendered.layout, {
+      svgLabels: true,
+    });
+    return renderPng(await prepareSvg(svg, rendered.theme, { transparent }), scale);
+  }
 }
 
 function describeError(err: unknown): string {
-  const message = err instanceof Error ? err.message : String(err);
-  if (/tainted|insecure/i.test(message)) {
-    return 'This diagram uses HTML labels that cannot be drawn to PNG. Try SVG instead.';
-  }
+  const message = (err as { message?: string })?.message ?? String(err);
   return message || 'Export failed.';
 }
 
 async function exportSvgFile(): Promise<void> {
-  const svg = requireSvg();
-  if (!svg) return;
+  const rendered = requireRendered();
+  if (!rendered) return;
   try {
-    const prepared = await prepareSvg(svg, lastTheme, { transparent });
-    download(svgBlob(prepared), exportFilename(editor.getCode(), 'svg'));
+    const prepared = await prepareSvg(rendered.svg, rendered.theme, { transparent });
+    download(svgBlob(prepared), exportFilename(rendered.code, 'svg'));
   } catch (err) {
     toast(describeError(err), 'error');
   }
 }
 
 async function exportPngFile(): Promise<void> {
-  const svg = requireSvg();
-  if (!svg) return;
+  const rendered = requireRendered();
+  if (!rendered) return;
   try {
-    const prepared = await prepareSvg(svg, lastTheme, { transparent });
-    const result = await renderPng(prepared, scale);
-    download(result.blob, exportFilename(editor.getCode(), 'png'));
+    const result = await buildPng(rendered);
+    download(result.blob, exportFilename(rendered.code, 'png'));
     if (result.scale < scale - 0.01) {
       toast(`Diagram is large, so the PNG was exported at ${result.scale.toFixed(2)}×.`);
     }
@@ -270,11 +292,9 @@ async function exportPngFile(): Promise<void> {
 }
 
 function copyPngToClipboard(): void {
-  const svg = requireSvg();
-  if (!svg) return;
-  const blob = prepareSvg(svg, lastTheme, { transparent })
-    .then((prepared) => renderPng(prepared, scale))
-    .then((result) => result.blob);
+  const rendered = requireRendered();
+  if (!rendered) return;
+  const blob = buildPng(rendered).then((result) => result.blob);
   copyPng(blob)
     .then(() => toast('PNG copied to clipboard.'))
     .catch((err) => toast(describeError(err), 'error'));

@@ -6,6 +6,8 @@ export interface AppTheme {
   mermaid: {
     theme: 'base';
     look?: 'classic' | 'handDrawn';
+    /** Edge curve for flowcharts; defaults to 'step' (with softened corners). */
+    curve?: 'step' | 'basis' | 'linear';
     // Mermaid treats any truthy `darkMode` as dark, so it stays a real boolean.
     themeVariables: Record<string, string | boolean>;
     themeCSS?: string;
@@ -26,16 +28,16 @@ const cleanLight: AppTheme = {
       fontFamily: SANS,
       fontSize: '15px',
       background: '#ffffff',
-      primaryColor: '#f8fafc',
+      primaryColor: '#ffffff',
       primaryTextColor: '#0f172a',
-      primaryBorderColor: '#cbd5e1',
+      primaryBorderColor: '#64748b',
       secondaryColor: '#eef2ff',
       tertiaryColor: '#f1f5f9',
-      lineColor: '#94a3b8',
+      lineColor: '#64748b',
       textColor: '#1e293b',
       clusterBkg: '#f8fafc',
-      clusterBorder: '#e2e8f0',
-      edgeLabelBackground: '#ffffff',
+      clusterBorder: '#cbd5e1',
+      edgeLabelBackground: '#eef1f5',
       noteBkgColor: '#fefce8',
       noteBorderColor: '#fde68a',
       noteTextColor: '#422006',
@@ -79,8 +81,10 @@ const cleanLight: AppTheme = {
       pieLegendTextColor: '#334155',
     },
     themeCSS: `
-      .node rect, .node polygon, .cluster rect { rx: 8px; ry: 8px; }
-      .flowchart-link, .relation, .transition { stroke-width: 1.25px; }
+      .node rect, .cluster rect { rx: 8px; ry: 8px; }
+      .node polygon.label-container { fill: #f8fafc; }
+      .node .label-container { filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12)); }
+      .flowchart-link, .relation, .transition { stroke-width: 1.4px; }
     `,
   },
   canvas: { background: '#ffffff', padding: 24 },
@@ -113,7 +117,7 @@ const midnight: AppTheme = {
       clusterBkg: '#161a2e',
       clusterBorder: '#4f46e5',
       titleColor: '#eef2ff',
-      edgeLabelBackground: '#1a1e33',
+      edgeLabelBackground: '#262b4d',
       noteBkgColor: '#1e293b',
       noteBorderColor: '#475569',
       noteTextColor: '#e2e8f0',
@@ -163,7 +167,9 @@ const midnight: AppTheme = {
       pieLegendTextColor: '#e2e8f0',
     },
     themeCSS: `
-      .node rect, .node polygon, .cluster rect { rx: 10px; ry: 10px; }
+      .node rect, .cluster rect { rx: 10px; ry: 10px; }
+      .node polygon.label-container { fill: #1e1b4b; stroke: #a5b4fc; }
+      .node .label-container { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)); }
     `,
   },
   canvas: { background: '#0f1220', padding: 28 },
@@ -179,23 +185,23 @@ const pastel: AppTheme = {
       fontFamily: SANS,
       fontSize: '16px',
       background: '#fffdf9',
-      primaryColor: '#fde2e4',
+      primaryColor: '#ece8fb',
       primaryTextColor: '#3f3d56',
-      primaryBorderColor: '#f2a7b3',
+      primaryBorderColor: '#b3a8ec',
       secondaryColor: '#d7f0e9',
       secondaryBorderColor: '#8fd1bd',
-      tertiaryColor: '#e7e3fb',
-      tertiaryBorderColor: '#b5aaf0',
-      lineColor: '#8d8aa8',
+      tertiaryColor: '#fde2e4',
+      tertiaryBorderColor: '#f2a7b3',
+      lineColor: '#8580a8',
       textColor: '#3f3d56',
-      clusterBkg: '#f6f3ff',
+      clusterBkg: '#faf7ff',
       clusterBorder: '#d4ccf7',
-      edgeLabelBackground: '#fffdf9',
+      edgeLabelBackground: '#f3eee6',
       noteBkgColor: '#fff4d6',
       noteBorderColor: '#f5d27a',
       noteTextColor: '#4a3f1d',
-      actorBkg: '#fde2e4',
-      actorBorder: '#f2a7b3',
+      actorBkg: '#ece8fb',
+      actorBorder: '#b3a8ec',
       actorTextColor: '#3f3d56',
       signalColor: '#8d8aa8',
       signalTextColor: '#3f3d56',
@@ -234,8 +240,10 @@ const pastel: AppTheme = {
       pieLegendTextColor: '#3f3d56',
     },
     themeCSS: `
-      .node rect, .node polygon, .cluster rect { rx: 14px; ry: 14px; }
-      .flowchart-link, .relation, .transition { stroke-width: 1.75px; }
+      .node rect, .cluster rect { rx: 14px; ry: 14px; }
+      .node polygon.label-container { fill: #fde8d7; stroke: #eeb08a; }
+      .node .label-container { filter: drop-shadow(0 2px 4px rgba(90, 70, 140, 0.12)); }
+      .flowchart-link, .relation, .transition { stroke-width: 1.6px; }
     `,
   },
   canvas: { background: '#fffdf9', padding: 32 },
@@ -332,6 +340,7 @@ const sketch: AppTheme = {
   mermaid: {
     theme: 'base',
     look: 'handDrawn',
+    curve: 'basis',
     themeVariables: {
       fontFamily: SANS,
       fontSize: '16px',

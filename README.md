@@ -35,7 +35,7 @@ npm run notices    # regenerate THIRD_PARTY_NOTICES.md after dependency changes
 
 ## Notes
 
-- Labels are rendered as plain SVG text (`htmlLabels: false`) so PNG export never hits a tainted canvas. Markdown-style label formatting is therefore limited.
+- Labels use HTML (`htmlLabels: true`), like Mermaid Live, so wrapping, markdown and characters such as `>` behave the same. If a browser refuses to export a canvas that drew HTML labels, the PNG is re-rendered with plain SVG text labels. Flowchart edges use the `step` curve with softened corners.
 - `@mermaid-js/layout-elk` ships its own copy of some Mermaid internals, so the ELK chunk is large. It only loads when ELK is selected.
 
 ## License

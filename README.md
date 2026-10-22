@@ -2,6 +2,8 @@
 
 A static, client-side studio for turning Mermaid code into polished diagrams. Type on the left, see a live preview on the right, pick one of five themes and export SVG or PNG. Everything runs in the browser: no backend, no analytics, no cookies, no third-party requests.
 
+<img width="1511" height="817" alt="image" src="https://github.com/user-attachments/assets/e194ec07-15dc-4809-836b-2136af6928b6" />
+
 ## Features
 
 - **Editor**: CodeMirror 6 with lightweight Mermaid highlighting, autosave to `localStorage`, and seven examples (flowchart, sequence, class, state, ER, Gantt, pie).

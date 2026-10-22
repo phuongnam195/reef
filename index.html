@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Reef renders diagrams from Mermaid code in your browser and exports them as SVG or PNG."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Reef · Diagram studio</title>
+  </head>
+  <body>
+    <header class="toolbar">
+      <div class="brand">
+        <img src="/favicon.svg" alt="" width="26" height="26" />
+        <span class="brand-name">Reef</span>
+      </div>
+
+      <div class="toolbar-group">
+        <label class="field">
+          <span class="field-label">Example</span>
+          <select id="example-select" aria-label="Load an example">
+            <option value="">Load…</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Theme</span>
+          <span class="theme-field">
+            <span id="theme-swatch" class="swatch" aria-hidden="true"></span>
+            <select id="theme-select" aria-label="Theme"></select>
+          </span>
+        </label>
+        <label class="field" title="ELK applies to flowcharts and state diagrams">
+          <span class="field-label">Layout</span>
+          <select id="layout-select" aria-label="Layout engine">
+            <option value="dagre">Dagre</option>
+            <option value="elk">ELK</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <div class="toolbar-group export-group">
+        <div class="segmented" role="radiogroup" aria-label="PNG scale">
+          <label><input type="radio" name="scale" value="1" /><span>1×</span></label>
+          <label><input type="radio" name="scale" value="2" checked /><span>2×</span></label>
+          <label><input type="radio" name="scale" value="3" /><span>3×</span></label>
+        </div>
+        <label class="check" title="Export without the theme background">
+          <input type="checkbox" id="transparent-toggle" />
+          <span>Transparent</span>
+        </label>
+        <button id="export-svg" class="btn" title="Download SVG (Ctrl/⌘ + Shift + S)">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" />
+          </svg>
+          SVG
+        </button>
+        <button id="export-png" class="btn btn-primary" title="Download PNG (Ctrl/⌘ + S)">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" />
+          </svg>
+          PNG
+        </button>
+        <button id="copy-png" class="btn" title="Copy PNG to clipboard">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <rect x="7" y="7" width="10" height="10" rx="2" />
+            <path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+          </svg>
+          Copy
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace" id="workspace">
+      <section class="pane editor-pane" aria-label="Code editor">
+        <div class="pane-head">
+          <span class="pane-title">Code</span>
+          <span id="status" class="status status-ok">Ready</span>
+        </div>
+        <div id="editor" class="editor"></div>
+        <div id="error" class="error-panel" role="alert" hidden>
+          <div class="error-title">
+            Syntax error<span id="error-line"></span>
+            <span class="error-hint">Showing the last valid diagram</span>
+          </div>
+          <pre id="error-message"></pre>
+        </div>
+      </section>
+
+      <div
+        id="resizer"
+        class="resizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize editor"
+        aria-valuemin="20"
+        aria-valuemax="80"
+        tabindex="0"
+      ></div>
+
+      <section class="pane preview-pane" aria-label="Preview">
+        <div id="preview" class="preview"></div>
+        <div id="empty-state" class="empty-state" hidden>Start typing to see your diagram.</div>
+        <div id="loading" class="loading">
+          <span class="spinner" aria-hidden="true"></span>
+          Loading renderer…
+        </div>
+        <span id="busy" class="busy" hidden><span class="spinner" aria-hidden="true"></span></span>
+        <div class="zoom-controls" role="toolbar" aria-label="Zoom">
+          <button id="zoom-out" class="icon-btn" title="Zoom out" aria-label="Zoom out">−</button>
+          <span id="zoom-level" class="zoom-level">100%</span>
+          <button id="zoom-in" class="icon-btn" title="Zoom in" aria-label="Zoom in">+</button>
+          <span class="divider"></span>
+          <button id="zoom-fit" class="text-btn" title="Fit to view">Fit</button>
+          <button id="zoom-actual" class="text-btn" title="Actual size">100%</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span
+        >Reef · <a href="./LICENSE.txt">MIT License</a> ·
+        <a href="./THIRD_PARTY_NOTICES.txt">Third-party notices</a></span
+      >
+      <span>Powered by Mermaid. Not affiliated with Mermaid / Mermaid Chart.</span>
+      <span class="footer-privacy"
+        >Runs entirely in your browser. Nothing is uploaded or tracked.</span
+      >
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

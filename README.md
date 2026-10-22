@@ -6,7 +6,7 @@ A static, client-side studio for turning Mermaid code into polished diagrams. Ty
 
 - **Editor**: CodeMirror 6 with lightweight Mermaid highlighting, autosave to `localStorage`, and seven examples (flowchart, sequence, class, state, ER, Gantt, pie).
 - **Live render**: 300 ms debounce. On a syntax error the message appears under the editor, the offending line is highlighted and the last valid diagram stays on screen.
-- **Themes**: Clean Light, Midnight, Pastel, Blueprint and Sketch (hand-drawn look). The preview background matches the export.
+- **Themes**: Clean Light, Spectrum (Mermaid's `redux-color` preset with the `neo` look), Midnight, Pastel, Blueprint and Sketch (hand-drawn look). Sequence-diagram participants get a distinct colour each. The preview background matches the export.
 - **Layouts**: Dagre by default, ELK on demand (loaded as a separate chunk only when selected).
 - **Preview**: pan and zoom, Fit, actual size (100%).
 - **Export**:

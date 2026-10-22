@@ -1,11 +1,19 @@
+export interface ParticipantColor {
+  fill: string;
+  stroke: string;
+}
+
 export interface AppTheme {
   id: string;
   name: string;
   /** Swatch colours shown next to the theme name in the picker. */
   swatch: [string, string];
+  /** Colours cycled across sequence-diagram participants, left to right. */
+  participants?: ParticipantColor[];
   mermaid: {
-    theme: 'base';
-    look?: 'classic' | 'handDrawn';
+    /** 'base' is fully driven by themeVariables; 'redux-color' is a Mermaid preset. */
+    theme: 'base' | 'redux-color';
+    look?: 'classic' | 'handDrawn' | 'neo';
     /** Edge curve for flowcharts; defaults to 'step' (with softened corners). */
     curve?: 'step' | 'basis' | 'linear';
     // Mermaid treats any truthy `darkMode` as dark, so it stays a real boolean.
@@ -22,6 +30,15 @@ const cleanLight: AppTheme = {
   id: 'clean-light',
   name: 'Clean Light',
   swatch: ['#ffffff', '#64748b'],
+  participants: [
+    { fill: '#eef2ff', stroke: '#6366f1' },
+    { fill: '#ecfeff', stroke: '#0891b2' },
+    { fill: '#fff7ed', stroke: '#ea580c' },
+    { fill: '#f0fdf4', stroke: '#16a34a' },
+    { fill: '#fdf2f8', stroke: '#db2777' },
+    { fill: '#f5f3ff', stroke: '#7c3aed' },
+    { fill: '#fefce8', stroke: '#ca8a04' },
+  ],
   mermaid: {
     theme: 'base',
     themeVariables: {
@@ -30,25 +47,28 @@ const cleanLight: AppTheme = {
       background: '#ffffff',
       primaryColor: '#ffffff',
       primaryTextColor: '#0f172a',
-      primaryBorderColor: '#64748b',
+      primaryBorderColor: '#475569',
       secondaryColor: '#eef2ff',
       tertiaryColor: '#f1f5f9',
-      lineColor: '#64748b',
+      lineColor: '#475569',
       textColor: '#1e293b',
       clusterBkg: '#f8fafc',
       clusterBorder: '#cbd5e1',
       edgeLabelBackground: '#eef1f5',
-      noteBkgColor: '#fefce8',
-      noteBorderColor: '#fde68a',
+      noteBkgColor: '#fef9c3',
+      noteBorderColor: '#eab308',
       noteTextColor: '#422006',
       actorBkg: '#f8fafc',
-      actorBorder: '#cbd5e1',
+      actorBorder: '#475569',
       actorTextColor: '#0f172a',
-      signalColor: '#64748b',
+      signalColor: '#1e293b',
+      actorLineColor: '#64748b',
       signalTextColor: '#1e293b',
       labelBoxBkgColor: '#f1f5f9',
       labelBoxBorderColor: '#cbd5e1',
       sequenceNumberColor: '#ffffff',
+      activationBkgColor: '#f1f5f9',
+      activationBorderColor: '#475569',
       taskBkgColor: '#e0e7ff',
       taskBorderColor: '#a5b4fc',
       taskTextColor: '#1e1b4b',
@@ -84,7 +104,9 @@ const cleanLight: AppTheme = {
       .node rect, .cluster rect { rx: 8px; ry: 8px; }
       .node polygon.label-container { fill: #f8fafc; }
       .node .label-container { filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.12)); }
-      .flowchart-link, .relation, .transition { stroke-width: 1.4px; }
+      .node .label-container { stroke-width: 1.5px; }
+      rect.actor { stroke-width: 2px; }
+      .flowchart-link, .relation, .transition { stroke-width: 1.5px; }
     `,
   },
   canvas: { background: '#ffffff', padding: 24 },
@@ -94,6 +116,15 @@ const midnight: AppTheme = {
   id: 'midnight',
   name: 'Midnight',
   swatch: ['#0f1220', '#6366f1'],
+  participants: [
+    { fill: '#1e1b4b', stroke: '#818cf8' },
+    { fill: '#083344', stroke: '#22d3ee' },
+    { fill: '#431407', stroke: '#fb923c' },
+    { fill: '#052e16', stroke: '#4ade80' },
+    { fill: '#500724', stroke: '#f472b6' },
+    { fill: '#2e1065', stroke: '#a78bfa' },
+    { fill: '#422006', stroke: '#facc15' },
+  ],
   mermaid: {
     theme: 'base',
     themeVariables: {
@@ -118,14 +149,14 @@ const midnight: AppTheme = {
       clusterBorder: '#4f46e5',
       titleColor: '#eef2ff',
       edgeLabelBackground: '#262b4d',
-      noteBkgColor: '#1e293b',
-      noteBorderColor: '#475569',
-      noteTextColor: '#e2e8f0',
+      noteBkgColor: '#3b3418',
+      noteBorderColor: '#facc15',
+      noteTextColor: '#fef9c3',
       actorBkg: '#3730a3',
       actorBorder: '#818cf8',
       actorTextColor: '#eef2ff',
-      actorLineColor: '#6366f1',
-      signalColor: '#c7d2fe',
+      actorLineColor: '#7c83c9',
+      signalColor: '#e0e7ff',
       signalTextColor: '#e2e8f0',
       labelBoxBkgColor: '#1e1b4b',
       labelBoxBorderColor: '#6366f1',
@@ -169,7 +200,8 @@ const midnight: AppTheme = {
     themeCSS: `
       .node rect, .cluster rect { rx: 10px; ry: 10px; }
       .node polygon.label-container { fill: #1e1b4b; stroke: #a5b4fc; }
-      .node .label-container { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)); }
+      rect.actor { stroke-width: 2px; }
+      .node .label-container { stroke-width: 1.5px; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)); }
     `,
   },
   canvas: { background: '#0f1220', padding: 28 },
@@ -179,6 +211,14 @@ const pastel: AppTheme = {
   id: 'pastel',
   name: 'Pastel',
   swatch: ['#fde2e4', '#bde0d4'],
+  participants: [
+    { fill: '#ece8fb', stroke: '#8b7ce0' },
+    { fill: '#dcf2ea', stroke: '#3fa784' },
+    { fill: '#fde8d7', stroke: '#e0884f' },
+    { fill: '#fde2e6', stroke: '#e06c86' },
+    { fill: '#dfeefb', stroke: '#4f93d6' },
+    { fill: '#fbf2cc', stroke: '#c9a227' },
+  ],
   mermaid: {
     theme: 'base',
     themeVariables: {
@@ -186,25 +226,26 @@ const pastel: AppTheme = {
       fontSize: '16px',
       background: '#fffdf9',
       primaryColor: '#ece8fb',
-      primaryTextColor: '#3f3d56',
-      primaryBorderColor: '#b3a8ec',
+      primaryTextColor: '#2f2c45',
+      primaryBorderColor: '#8b7ce0',
       secondaryColor: '#d7f0e9',
-      secondaryBorderColor: '#8fd1bd',
+      secondaryBorderColor: '#3fa784',
       tertiaryColor: '#fde2e4',
-      tertiaryBorderColor: '#f2a7b3',
-      lineColor: '#8580a8',
-      textColor: '#3f3d56',
+      tertiaryBorderColor: '#e06c86',
+      lineColor: '#5f5a85',
+      textColor: '#2f2c45',
       clusterBkg: '#faf7ff',
       clusterBorder: '#d4ccf7',
       edgeLabelBackground: '#f3eee6',
-      noteBkgColor: '#fff4d6',
-      noteBorderColor: '#f5d27a',
+      noteBkgColor: '#fff1c2',
+      noteBorderColor: '#e2b33c',
       noteTextColor: '#4a3f1d',
       actorBkg: '#ece8fb',
-      actorBorder: '#b3a8ec',
-      actorTextColor: '#3f3d56',
-      signalColor: '#8d8aa8',
-      signalTextColor: '#3f3d56',
+      actorBorder: '#8b7ce0',
+      actorTextColor: '#2f2c45',
+      actorLineColor: '#9a95b8',
+      signalColor: '#4a4570',
+      signalTextColor: '#2f2c45',
       labelBoxBkgColor: '#d7f0e9',
       labelBoxBorderColor: '#8fd1bd',
       sequenceNumberColor: '#ffffff',
@@ -241,7 +282,9 @@ const pastel: AppTheme = {
     },
     themeCSS: `
       .node rect, .cluster rect { rx: 14px; ry: 14px; }
-      .node polygon.label-container { fill: #fde8d7; stroke: #eeb08a; }
+      .node polygon.label-container { fill: #fde8d7; stroke: #e0884f; }
+      .node .label-container { stroke-width: 1.5px; }
+      rect.actor { stroke-width: 2px; }
       .node .label-container { filter: drop-shadow(0 2px 4px rgba(90, 70, 140, 0.12)); }
       .flowchart-link, .relation, .transition { stroke-width: 1.6px; }
     `,
@@ -337,6 +380,13 @@ const sketch: AppTheme = {
   id: 'sketch',
   name: 'Sketch',
   swatch: ['#fbf6e9', '#3b3a36'],
+  participants: [
+    { fill: '#fff3c4', stroke: '#3b3a36' },
+    { fill: '#dcebf7', stroke: '#3b3a36' },
+    { fill: '#fbe1dc', stroke: '#3b3a36' },
+    { fill: '#e3f1dc', stroke: '#3b3a36' },
+    { fill: '#ece3f5', stroke: '#3b3a36' },
+  ],
   mermaid: {
     theme: 'base',
     look: 'handDrawn',
@@ -403,7 +453,25 @@ const sketch: AppTheme = {
   canvas: { background: '#fbf6e9', padding: 32 },
 };
 
-export const THEMES: AppTheme[] = [cleanLight, midnight, pastel, blueprint, sketch];
+const spectrum: AppTheme = {
+  id: 'spectrum',
+  name: 'Spectrum',
+  swatch: ['#fb923c', '#22d3ee'],
+  mermaid: {
+    theme: 'redux-color',
+    look: 'neo',
+    themeVariables: {
+      fontFamily: MONO,
+      fontSize: '14px',
+    },
+    themeCSS: `
+      .noteText, .noteText > tspan { font-weight: 400; }
+    `,
+  },
+  canvas: { background: '#ffffff', padding: 28 },
+};
+
+export const THEMES: AppTheme[] = [cleanLight, spectrum, midnight, pastel, blueprint, sketch];
 
 export function getTheme(id: string | null | undefined): AppTheme {
   return THEMES.find((t) => t.id === id) ?? THEMES[0];

@@ -1,5 +1,5 @@
 import mermaid, { type MermaidConfig } from 'mermaid';
-import type { AppTheme } from './themes';
+import type { AppTheme, ParticipantColor } from './themes';
 
 export type LayoutEngine = 'dagre' | 'elk';
 
@@ -45,7 +45,8 @@ function buildConfig(
     theme: theme.mermaid.theme,
     look: theme.mermaid.look ?? 'classic',
     themeVariables: theme.mermaid.themeVariables,
-    themeCSS: theme.mermaid.themeCSS,
+    // Monospace themes would otherwise turn `>=` or `->` into ligature glyphs.
+    themeCSS: `* { font-variant-ligatures: none; }\n${theme.mermaid.themeCSS ?? ''}`,
     fontFamily: String(theme.mermaid.themeVariables.fontFamily ?? ''),
     layout,
     // HTML labels wrap and escape text the same way Mermaid Live does; the
@@ -97,16 +98,45 @@ function roundCorners(d: string, radius: number): string | null {
 }
 
 // Mermaid's step curve draws sharp right angles; soften them like a hand-tuned diagram.
-function softenEdges(svg: string): string {
-  if (!svg.includes('flowchart-link')) return svg;
-  const template = document.createElement('template');
-  template.innerHTML = svg;
-  const root = template.content.querySelector('svg');
-  if (!root) return svg;
+function softenEdges(root: SVGSVGElement): void {
   for (const path of root.querySelectorAll<SVGPathElement>('path.flowchart-link')) {
     const rounded = roundCorners(path.getAttribute('d') ?? '', 8);
     if (rounded) path.setAttribute('d', rounded);
   }
+}
+
+// Mermaid only varies participant colours in its redux-color themes; give every
+// theme with a palette the same left-to-right colour coding.
+function colorParticipants(root: SVGSVGElement, palette: ParticipantColor[]): void {
+  const lifelines = [...root.querySelectorAll<SVGLineElement>('line.actor-line[name]')].sort(
+    (a, b) => Number(a.getAttribute('x1')) - Number(b.getAttribute('x1')),
+  );
+  lifelines.forEach((line, i) => {
+    const { fill, stroke } = palette[i % palette.length];
+    const name = CSS.escape(line.getAttribute('name') ?? '');
+    for (const rect of root.querySelectorAll<SVGRectElement>(`rect.actor[name="${name}"]`)) {
+      rect.style.fill = fill;
+      rect.style.stroke = stroke;
+    }
+    for (const man of root.querySelectorAll<SVGGElement>(`g.actor-man[name="${name}"]`)) {
+      man.style.stroke = stroke;
+      man.querySelector('circle')?.style.setProperty('fill', fill);
+    }
+  });
+}
+
+function postProcess(svg: string, theme: AppTheme): string {
+  const palette = theme.participants;
+  const hasEdges = svg.includes('flowchart-link');
+  const hasActors = !!palette?.length && svg.includes('actor-line');
+  if (!hasEdges && !hasActors) return svg;
+
+  const template = document.createElement('template');
+  template.innerHTML = svg;
+  const root = template.content.querySelector('svg');
+  if (!root) return svg;
+  if (hasEdges) softenEdges(root);
+  if (hasActors) colorParticipants(root, palette!);
   return root.outerHTML;
 }
 
@@ -162,7 +192,7 @@ async function renderNow(
   const id = `reef-svg-${++counter}`;
   try {
     const { svg } = await mermaid.render(id, code);
-    return softenEdges(svg);
+    return postProcess(svg, theme);
   } catch (err) {
     throw toRenderError(err);
   } finally {
